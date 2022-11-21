@@ -1,0 +1,39 @@
+body {
+  background-color: $color-black;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  padding: 3rem;
+  gap: 3rem;
+}
+
+.sort {
+  position: relative;
+  align-self: center;
+  border: 3px solid $color-secondary;
+  width: 90%;
+  &__category {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    justify-items: center;
+    align-content: center;
+    gap: 1rem;
+    a {
+      cursor: pointer;
+      color: $color-white;
+      text-transform: capitalize;
+      font-size: 1.2rem;
+      transition: color 0.5s;
+      &:hover {
+        color: $color-primary;
+      }
+    }
+  }
+}
+
+dl {
+  color: $color-white;
+  font-size: 1.5rem;
+}
