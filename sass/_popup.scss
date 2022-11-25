@@ -6,24 +6,36 @@
   background-color: $color-black;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%) scale(0);
+  transform: translate(-50%, -50%) scale(1);
   padding: 3rem;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   transition: transform 1s;
-  opacity: 0;
+  opacity: 1;
+  @include respond(middle) {
+    align-content: flex-start;
+    justify-content: flex-start;
+  }
   &__images {
     display: flex;
     justify-content: center;
+    @include respond(middle) {
+      display: none;
+    }
   }
   &__img {
     display: inline-block;
     width: 24%;
   }
 
-  p {
+  &__close {
+    position: absolute;
+    top: 2rem;
+    right: 2rem;
     font-size: 1.2rem;
     font-weight: 500;
+    cursor: pointer;
+    color: red;
   }
 }

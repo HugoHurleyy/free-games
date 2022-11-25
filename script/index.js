@@ -3,6 +3,8 @@
 const cards = document.querySelector('.cards');
 const gameNumber = document.querySelector('.game-number');
 const popup = document.querySelector('.popup');
+const popupClose = document.querySelector('.popup__close');
+const sortCategory = document.querySelector('.sort__category');
 
 const renderError = errorMessage => {
   alert(errorMessage);
@@ -11,7 +13,7 @@ const renderError = errorMessage => {
 const options = {
   method: 'GET',
   headers: {
-    'X-RapidAPI-Key': 'cf8258c1fbmshffc26c9b2ea24efp1bd3e4jsne631f1018de2',
+    'X-RapidAPI-Key': `${your - own - api - key}`,
     'X-RapidAPI-Host': 'free-to-play-games-database.p.rapidapi.com',
   },
 };
@@ -19,13 +21,14 @@ const options = {
 const getData = url => {
   return fetch(url, options).then(response => {
     if (!response.ok) throw new Error('Games can not found');
-    console.log(response);
     return response.json();
   });
 };
 
-const insertHtml = () => {
-  getData('https://free-to-play-games-database.p.rapidapi.com/api/games')
+//? Get whole game data and insert to the HTML
+const insertHtml = url => {
+  while (cards.firstChild) cards.removeChild(cards.lastChild);
+  getData(url)
     .then(datas => {
       gameNumber.textContent = datas.length;
       datas.forEach(data => {
@@ -59,12 +62,23 @@ const insertHtml = () => {
     .catch(error => {
       console.log(error);
 
-      renderError(`${error.message}`);
+      renderError(`Something went wrong 🤯💣`);
     });
 };
 
-insertHtml();
+insertHtml('https://free-to-play-games-database.p.rapidapi.com/api/games');
 
+const createImage = (imageCount, screenshots) => {
+  let imageArr = [];
+  for (let i = 0; i < imageCount; i++) {
+    imageArr.push(
+      `<img src="${screenshots[i].image}"alt="" class="popup__img"/>`
+    );
+  }
+  return imageArr;
+};
+
+//? Specific Game Information
 cards.addEventListener('click', function (e) {
   if (!e.target.classList.contains('btn')) return;
 
@@ -74,45 +88,42 @@ cards.addEventListener('click', function (e) {
     `https://free-to-play-games-database.p.rapidapi.com/api/game?id=${gameId}`
   )
     .then(data => {
+      const {
+        minimum_system_requirements: {
+          os = '?',
+          processor = '?',
+          memory = '?',
+          graphics = '?',
+          storage = '?',
+        } = '?',
+        screenshots,
+        description,
+      } = data;
+
       const html = `
       <div class="popup__images">
-        <img
-          src="${data.screenshots[0].image}"
-          alt=""
-          class="popup__img"
-        />
-        <img
-          src="${data.screenshots[0].image}"
-          alt=""
-          class="popup__img"
-        />
-        <img
-          src="${data.screenshots[0].image}"
-          alt=""
-          class="popup__img"
-        />
-        <img
-          src="${data.screenshots[0].image}"
-          alt=""
-          class="popup__img"
-        />
+        ${createImage(screenshots.length, screenshots)}
       </div>
-      <h2 class="heading-4">Information About the game</h2>
-      <h5 class="heading-5 text-white fw-500">${data.description}</h5>
 
-      <h2 class="heading-4">Minimum System Requirements</h2>
-      <h5 class="heading-5 fw-500 text-white">
-        OS: ${data.minimum_system_requirements.os}
-      </h5>
-      <h5 class="heading-5 fw-500 text-white">
-        Processor: ${data.minimum_system_requirements.processor}
-      </h5>
-      <h5 class="heading-5 fw-500 text-white">memory: ${data.minimum_system_requirements.memory}</h5>
-      <h5 class="heading-5 fw-500 text-white">
-        graphics: ${data.minimum_system_requirements.graphics}
-      </h5>
-      <h5 class="heading-5 fw-500 text-white">storage: ${data.minimum_system_requirements.storage}</h5>
+      <div class = "popup__info">
+        <h2 class="heading-4">Information About the game</h2>
+        <h5 class="heading-5 text-white fw-500">${description}</h5>
+      </div>
 
+      <div class = "popup__system">
+        <h2 class="heading-4">Minimum System Requirements</h2>
+        <h5 class="heading-5 fw-500 text-white">
+          OS: ${os}
+        </h5>
+        <h5 class="heading-5 fw-500 text-white">
+          Processor: ${processor}
+        </h5>
+        <h5 class="heading-5 fw-500 text-white">memory: ${memory}</h5>
+        <h5 class="heading-5 fw-500 text-white">
+          graphics: ${graphics}
+        </h5>
+        <h5 class="heading-5 fw-500 text-white">storage: ${storage}</h5>
+      </div>
     `;
 
       popup.insertAdjacentHTML('afterbegin', html);
@@ -120,8 +131,31 @@ cards.addEventListener('click', function (e) {
       popup.style.opacity = 1;
     })
     .catch(error => {
-      renderError(
-        'We cant reach this game information right now please try later'
-      );
+      renderError(error.message);
     });
+});
+
+//? Close popup
+popup.addEventListener('click', function (e) {
+  if (!e.target.classList.contains('popup__close')) return;
+  while (popup.firstChild) {
+    popup.removeChild(popup.lastChild);
+  }
+  popup.style.transform = 'translate(-50%, -50%) scale(0)';
+  popup.style.opacity = 0;
+  popup.insertAdjacentHTML('beforeend', '<p class="popup__close">X</p>');
+});
+
+//? Sort Games
+
+sortCategory.addEventListener('click', function (e) {
+  if (!e.target.classList.contains('category')) return;
+  const categoryName = e.target.textContent.toLowerCase();
+  if (categoryName === 'all')
+    return insertHtml(
+      'https://free-to-play-games-database.p.rapidapi.com/api/games'
+    );
+  insertHtml(
+    `https://free-to-play-games-database.p.rapidapi.com/api/games?category=${categoryName}`
+  );
 });
